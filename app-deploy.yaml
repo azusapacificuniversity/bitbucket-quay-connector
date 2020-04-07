@@ -1,0 +1,59 @@
+apiVersion: appsody.dev/v1beta1
+kind: AppsodyApplication
+metadata:
+  annotations:
+    commit.image.appsody.dev/author: Brian Monroe <paradoxguitarist@fedoraproject.org>
+    commit.image.appsody.dev/committer: Brian Monroe <paradoxguitarist@fedoraproject.org>
+    commit.image.appsody.dev/date: Tue Apr 7 07:46:09 2020 -0700
+    commit.image.appsody.dev/message: Additional confs
+    commit.stack.appsody.dev/author: Enrique Lacal <Enrique.Lacal.Bereslawski@ibm.com>
+    commit.stack.appsody.dev/committer: GitHub <noreply@github.com>
+    commit.stack.appsody.dev/contextDir: /incubator/nodejs-express
+    commit.stack.appsody.dev/date: Tue Mar 24 16:12:50 2020 +0000
+    commit.stack.appsody.dev/message: Fix download cli (#727)
+    stack.appsody.dev/authors: Sam Roberts <vieuxtech@gmail.com>
+    stack.appsody.dev/configured: docker.io/appsody/nodejs-express:0.4
+    stack.appsody.dev/created: "2020-03-24T16:54:29Z"
+    stack.appsody.dev/description: Express web framework for Node.js
+    stack.appsody.dev/documentation: https://github.com/appsody/stacks/tree/master/incubator/nodejs-express/README.md
+    stack.appsody.dev/licenses: Apache-2.0
+    stack.appsody.dev/revision: 79d53a60a7be210dfca141791cc01bd62821335e
+    stack.appsody.dev/source: https://github.com/appsody/stacks/tree/master/incubator/nodejs-express/image
+    stack.appsody.dev/tag: docker.io/appsody/nodejs-express:0.4.6
+    stack.appsody.dev/title: Node.js Express
+    stack.appsody.dev/url: https://github.com/appsody/stacks/tree/master/incubator/nodejs-express
+  creationTimestamp: null
+  labels:
+    image.opencontainers.org/title: bitbucket-quay-connector
+    stack.appsody.dev/id: nodejs-express
+    stack.appsody.dev/version: 0.4.6
+  name: bitbucket-quay-connector
+spec:
+  applicationImage: bitbucket-quay-connector:latest
+  createKnativeService: false
+  expose: true
+  livenessProbe:
+    failureThreshold: 12
+    httpGet:
+      path: /live
+      port: 3000
+    initialDelaySeconds: 5
+    periodSeconds: 2
+  monitoring:
+    labels:
+      k8s-app: bitbucket-quay-connector
+  readinessProbe:
+    failureThreshold: 12
+    httpGet:
+      path: /ready
+      port: 3000
+    initialDelaySeconds: 5
+    periodSeconds: 2
+    timeoutSeconds: 1
+  service:
+    annotations:
+      prometheus.io/scrape: "true"
+    port: 3000
+    type: NodePort
+  stack: nodejs-express
+  version: 1.0.0

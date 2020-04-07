@@ -1,0 +1,25 @@
+{
+  "name": "bitbucket-quay-connector",
+  "version": "0.1.0",
+  "description": "Provides middleware for Bitbucket webhooks to properly trigger Quay builds.",
+  "license": "MIT",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/azusapacificuniversity/bitbucket-quay-connector.git"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "~6.1.0",
+    "request": "^2.88.0"
+  },
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "crypto": "",
+    "request": "",
+    "body-parser": ""
+  }
+}
