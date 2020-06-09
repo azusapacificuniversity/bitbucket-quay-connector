@@ -5,7 +5,6 @@ module.exports = (/*options*/) => {
   const bodyParser = require('body-parser');
   const https = require('https');
   const axios = require('axios');
-  const crypto = require('crypto');
   const fs = require('fs');
   const quayHost = process.env.QUAY_HOST;
   let instance;
