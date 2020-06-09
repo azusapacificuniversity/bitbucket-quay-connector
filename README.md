@@ -5,19 +5,13 @@ This software provides middleware for self hosted instances of
 make webhook calls to [Quay](https://access.redhat.com/products/red-hat-quay),
 RedHat's container image registry. This project is built with
 [appsody](https://appsody.dev/docs).
-## Configuration
-You need to configure the config.json with the name of the Bitbucket repo (key)
-and the URL that quay needs you to post to as the value. The webhook will throw
-an error if this is not configured properly.
-
-You should also note that when using the "test"  button while setting up the
-webhook from Bitbucket, do not include testing the quay server link in the
-config.json, or the required secret configuration.
 
 ### Environmental Variables
 These need to be set when your final appsody container is deployed.
 
 `SERVER_SECRET` Required - Also needs to be set in your Bitbucket webhook.
+
+`QUAY_HOST` Required - the url for your quay host (example: quay-host.com).
 
 `QUAY_CA_FILE` Optional - If Quay's root CA is not publically signed, you'll
 need to set this to the name of the cert.pem that you've added to the root of
@@ -33,8 +27,6 @@ Here are the steps you'll take:
 - Clone this repository, and change it to your current working directory.
 - Create a new repository in quay and add a
 [Custom Git Repository Push Build Trigger](https://docs.quay.io/guides/custom-trigger.html). Copy the Webhook Endpoint URL.
-- Edit the `config.json` to have your Bitbucket repo name and the Webhook
-Endpoint URL you created in the previous step.
 - If you need to trust a Root CA, copy it to the repository root directory.
 - Run `appsody build` - This builds a container image that you can push.
 
