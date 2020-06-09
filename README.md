@@ -9,8 +9,6 @@ RedHat's container image registry. This project is built with
 ### Environmental Variables
 These need to be set when your final appsody container is deployed.
 
-`SERVER_SECRET` Required - Also needs to be set in your Bitbucket webhook.
-
 `QUAY_HOST` Required - the url for your quay host (example: quay-host.com).
 
 `QUAY_CA_FILE` Optional - If Quay's root CA is not publically signed, you'll

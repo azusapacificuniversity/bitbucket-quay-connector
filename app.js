@@ -24,22 +24,6 @@ module.exports = (/*options*/) => {
     instance = axios;
     console.log('No custom certs found.')
   };
-  // Verification function to check if it is actually Bitbucket who is POSTing here
-  const verifyBitbucket = (req) => {
-    if (!req.headers['user-agent'].includes('Bitbucket')) {
-      return false;
-    }
-    // Compare their hmac signature to our hmac signature
-    // (hmac = hash-based message authentication code)
-    const theirSignature = req.headers['x-hub-signature'];
-    if (theirSignature == null) {
-      return false;
-    }
-    const payload = JSON.stringify(req.body);
-    const secret = process.env.SERVER_SECRET
-    const ourSignature = `sha256=${crypto.createHmac('sha256', secret).update(payload).digest('hex')}`;
-    return crypto.timingSafeEqual(Buffer.from(theirSignature), Buffer.from(ourSignature));
-  };
   // Function for if we're not Authorized.
   const notAuthorized = (req, res) => {
     console.log('The Secret Key was wrong or missing.');
@@ -83,26 +67,18 @@ module.exports = (/*options*/) => {
       res.writeHead(200, { 'Content-Type': 'text/plain' });
       res.end('pong - Please note that the server secret was not tested as a part of this test.');
     } else {
-      if (verifyBitbucket(req)) {
-        // Bitbucket called with the right secret
-        // Pull the payload out of the request.
-        var payload = req.body
-        // See if the config has an entry for the POSTing repository.
+        // See if the req.query has the property token
         if (req.query.hasOwnProperty("token")){
           // We know where to direct the QUAY payload.
           authorizationSuccessful(req.body, req.originalUrl, req.query.token);
           // Quay was already updated. Respond to Bitbucket.
           res.writeHead(200, { 'Content-Type': 'text/plain' });
-          res.end('Thanks Bitbucket <3');
+          res.end('');
         } else {
           // Error because we don't have this repo in the config.
           res.writeHead(400, { 'Content-Type': 'text/plain' });
           res.end(`No token param found in request's query param(s)`);
         }
-      } else {
-        // Someone else calling
-        notAuthorized(req, res);
-      }
     }
   });
 
