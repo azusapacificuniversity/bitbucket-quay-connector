@@ -10,6 +10,10 @@ module.exports = (/*options*/) => {
   const quayHost = process.env.QUAY_HOST;
   let instance;
   app.use(bodyParser.json());
+
+  if (quayHost === null || quayHost === undefined) {
+    throw(new Error("Quay host not found."));
+  }
   // Check if we're using a custom cert.
   if (process.env.QUAY_CA_FILE){
     const cert = fs.readFileSync(`/project/user-app/${process.env.QUAY_CA_FILE}`)
@@ -44,15 +48,15 @@ module.exports = (/*options*/) => {
   };
 
   // This function POSTs to Quay.
-  const authorizationSuccessful = (payload, url) => {
+  const authorizationSuccessful = (payload, url, token) => {
     console.log('Bitbucket has authenticated.');
     // Build a new payload that quay can consume.
     var quaypayload = {"commit":payload.changes[0].toHash,"ref":payload.changes[0].ref.id,"default_branch":payload.changes[0].ref.displayId};
     // Make the POST request to the request url.
-    instance.post('https://' + quayHost + req.originalUrl, quaypayload, {
+    instance.post('https://' + quayHost + url, quaypayload, {
             auth: {
                     username: '$token',
-                    password: req.query.token
+                    password: token
                 }
             }, (error, res, body) => {
       if (error) {
@@ -84,16 +88,16 @@ module.exports = (/*options*/) => {
         // Pull the payload out of the request.
         var payload = req.body
         // See if the config has an entry for the POSTing repository.
-        if (config.hasOwnProperty(payload.repository.name)){
+        if (req.query.hasOwnProperty("token")){
           // We know where to direct the QUAY payload.
-          authorizationSuccessful(payload, req.originalUrl);
+          authorizationSuccessful(req.body, req.originalUrl, req.query.token);
           // Quay was already updated. Respond to Bitbucket.
           res.writeHead(200, { 'Content-Type': 'text/plain' });
           res.end('Thanks Bitbucket <3');
         } else {
           // Error because we don't have this repo in the config.
           res.writeHead(400, { 'Content-Type': 'text/plain' });
-          res.end(`${payload.repository.name} has not been added to the config. Please see the README.md on how to configure access for this repo.`);
+          res.end(`No token param found in request's query param(s)`);
         }
       } else {
         // Someone else calling
