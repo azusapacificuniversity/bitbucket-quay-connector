@@ -12,7 +12,7 @@ module.exports = (/*options*/) => {
   app.use(bodyParser.json());
 
   if (quayHost === null || quayHost === undefined) {
-    throw(new Error("Quay host not found."));
+    throw(new Error("The environment variable QUAY_HOST is not defined."));
   }
   // Check if we're using a custom cert.
   if (process.env.QUAY_CA_FILE){
