@@ -4,15 +4,20 @@ module.exports = (/*options*/) => {
   const app = express();
   const bodyParser = require('body-parser');
   const config = require('./config.json');
-  const request = require('request');
+  const https = require('https');
+  const axios = require('axios');
   const crypto = require('crypto');
   const fs = require('fs');
+  let instance;
   app.use(bodyParser.json());
   // Check if we're using a custom cert.
   if (process.env.QUAY_CA_FILE){
     const cert = fs.readFileSync(`/project/user-app/${process.env.QUAY_CA_FILE}`)
+    const httpsAgent = new https.Agent({ ca: cert });
+    instance = axios.create({ httpsAgent });
     console.log(`Loaded custom cert for Quay: ${process.env.QUAY_CA_FILE}`)
   } else {
+    instance = axios;
     console.log('No custom certs found.')
   };
   // Verification function to check if it is actually Bitbucket who is POSTing here
@@ -55,7 +60,7 @@ module.exports = (/*options*/) => {
     } else {
       json: quayoptions
     }
-    request.post(config[payload.repository.name], quayoptions, (error, res, body) => {
+    instance.post(config[payload.repository.name], quaypayload, (error, res, body) => {
       if (error) {
         // Log errors if they exist.
         console.error(error)
