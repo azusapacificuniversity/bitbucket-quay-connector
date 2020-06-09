@@ -19,8 +19,6 @@
   "dependencies": {
     "fs": "0.0.1-security",
     "axios": "^0.19.2",
-    "crypto": "",
-    "request": "",
     "body-parser": ""
   }
 }
