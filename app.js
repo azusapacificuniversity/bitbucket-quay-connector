@@ -3,11 +3,11 @@ module.exports = (/*options*/) => {
   const express = require('express');
   const app = express();
   const bodyParser = require('body-parser');
-  const config = require('./config.json');
   const https = require('https');
   const axios = require('axios');
   const crypto = require('crypto');
   const fs = require('fs');
+  const quayHost = process.env.QUAY_HOST;
   let instance;
   app.use(bodyParser.json());
   // Check if we're using a custom cert.
@@ -44,23 +44,17 @@ module.exports = (/*options*/) => {
   };
 
   // This function POSTs to Quay.
-  const authorizationSuccessful = (payload) => {
+  const authorizationSuccessful = (payload, url) => {
     console.log('Bitbucket has authenticated.');
     // Build a new payload that quay can consume.
     var quaypayload = {"commit":payload.changes[0].toHash,"ref":payload.changes[0].ref.id,"default_branch":payload.changes[0].ref.displayId};
-    // Make the POST request to the url in the config.
-    // Set different options if we're using our own CA.
-    if (process.env.QUAY_CA_FILE){
-      var quayoptions = {
-        json: quaypayload,
-        agentOptions: {
-          ca: fs.readFileSync(`/project/user-app/${process.env.QUAY_CA_FILE}`)
-        }
-      }
-    } else {
-      json: quayoptions
-    }
-    instance.post(config[payload.repository.name], quaypayload, (error, res, body) => {
+    // Make the POST request to the request url.
+    instance.post('https://' + quayHost + req.originalUrl, quaypayload, {
+            auth: {
+                    username: '$token',
+                    password: req.query.token
+                }
+            }, (error, res, body) => {
       if (error) {
         // Log errors if they exist.
         console.error(error)
@@ -92,7 +86,7 @@ module.exports = (/*options*/) => {
         // See if the config has an entry for the POSTing repository.
         if (config.hasOwnProperty(payload.repository.name)){
           // We know where to direct the QUAY payload.
-          authorizationSuccessful(payload);
+          authorizationSuccessful(payload, req.originalUrl);
           // Quay was already updated. Respond to Bitbucket.
           res.writeHead(200, { 'Content-Type': 'text/plain' });
           res.end('Thanks Bitbucket <3');
