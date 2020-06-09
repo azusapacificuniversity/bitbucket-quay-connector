@@ -41,5 +41,5 @@ SSH Public Key that Quay recreated to your repo as part of  the
 
 ## Running the docker image
 If you build the appsody image with `appsody build --tag bitbucket-quay-connector` then you can run the image you've created
-with `docker run --name bitbucet-quay-connector -d -e SERVER_SECRET=supersecretstring -p 3000:3000 bitbucket-quay-connector`
-This would allow you to use the connector at http://localhost:3000/api for the Bitbucket webhook url. (You would need to to replace localhost with your machines's local IP address like http://192.168.1.100:3000/api) 
+with `docker run --name bitbucket-quay-connector -d -p 3000:3000 bitbucket-quay-connector`
+This would allow you to use the connector at http://localhost:3000/api for the Bitbucket webhook url. (You would need to to replace localhost with your machines's local IP address like http://192.168.1.100:3000/api)
