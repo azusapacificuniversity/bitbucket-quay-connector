@@ -15,6 +15,14 @@ These need to be set when your final appsody container is deployed.
 need to set this to the name of the cert.pem that you've added to the root of
 this project. (example: QUAY_CA_FILE=ExampleRootCA.pem)
 
+### How it Works
+The application will forward your request to your `QUAY_HOST` environment
+variable i.e.
+https://your.initial.url/webhooks/push/trigger/id?token=token
+will forward to:
+https://your.quay.url/webhooks/push/trigger/id?token=token
+with a POST request
+
 ### Building the Appsody Project:
 You can read all about building and deploying Appsody projects
 [here](https://appsody.dev/docs/using-appsody/building-and-deploying/), but for
