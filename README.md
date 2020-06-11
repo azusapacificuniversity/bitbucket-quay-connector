@@ -32,8 +32,7 @@ Here are the steps you'll take:
 You'll need to add a webhook that points to your newly built container image,
 either with the FQDN or the IP address and then add the `/api` Endpoint.
 Example: https://192.168.1.101:3000/api or
-https://bitbucket-quay-connector.cloudapps.master.ose/api After that be sure to
-add the string you set for the `SERVER_SECRET`.
+https://bitbucket-quay-connector.cloudapps.master.ose/api. The server secret does not need to be configured.
 
 You will also need to add the
 SSH Public Key that Quay recreated to your repo as part of  the
