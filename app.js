@@ -6,6 +6,11 @@ module.exports = (/*options*/) => {
   const https = require('https');
   const axios = require('axios');
   const fs = require('fs');
+
+  if (process.env.QUAY_HOST !== null && process.env.QUAY_HOST !== undefined) {
+    throw (new Error("Environment variable QUAY_HOST is not defined"))
+  }
+
   const quayHost = process.env.QUAY_HOST;
   let instance;
   app.use(bodyParser.json());
