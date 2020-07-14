@@ -18,9 +18,9 @@ this project. (example: QUAY_CA_FILE=ExampleRootCA.pem)
 ### How it Works
 The application will forward your request to your `QUAY_HOST` environment
 variable i.e.
-https://your.initial.url/webhooks/push/trigger/id?token=token
+https://your.initial.url/webhooks/push/trigger/id?token=yourtoken
 will forward to:
-https://your.quay.url/webhooks/push/trigger/id?token=token
+https://$token:yourtoken@your.quay.url/webhooks/push/trigger/id
 with a POST request
 
 ### Building the Appsody Project:
