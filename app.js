@@ -3,33 +3,30 @@ module.exports = (/*options*/) => {
   const express = require('express');
   const app = express();
   const bodyParser = require('body-parser');
-  const config = require('./config.json');
-  const request = require('request');
-  const crypto = require('crypto');
+  const https = require('https');
+  const axios = require('axios');
   const fs = require('fs');
+
+  if (process.env.QUAY_HOST === null || process.env.QUAY_HOST === undefined) {
+    throw (new Error("Environment variable QUAY_HOST is not defined"));
+  }
+
+  const quayHost = process.env.QUAY_HOST;
+  let instance;
   app.use(bodyParser.json());
+
+  if (quayHost === null || quayHost === undefined) {
+    throw(new Error("The environment variable QUAY_HOST is not defined."));
+  }
   // Check if we're using a custom cert.
   if (process.env.QUAY_CA_FILE){
     const cert = fs.readFileSync(`/project/user-app/${process.env.QUAY_CA_FILE}`)
+    const httpsAgent = new https.Agent({ ca: cert });
+    instance = axios.create({ httpsAgent });
     console.log(`Loaded custom cert for Quay: ${process.env.QUAY_CA_FILE}`)
   } else {
+    instance = axios;
     console.log('No custom certs found.')
-  };
-  // Verification function to check if it is actually Bitbucket who is POSTing here
-  const verifyBitbucket = (req) => {
-    if (!req.headers['user-agent'].includes('Bitbucket')) {
-      return false;
-    }
-    // Compare their hmac signature to our hmac signature
-    // (hmac = hash-based message authentication code)
-    const theirSignature = req.headers['x-hub-signature'];
-    if (theirSignature == null) {
-      return false;
-    }
-    const payload = JSON.stringify(req.body);
-    const secret = process.env.SERVER_SECRET
-    const ourSignature = `sha256=${crypto.createHmac('sha256', secret).update(payload).digest('hex')}`;
-    return crypto.timingSafeEqual(Buffer.from(theirSignature), Buffer.from(ourSignature));
   };
   // Function for if we're not Authorized.
   const notAuthorized = (req, res) => {
@@ -39,23 +36,17 @@ module.exports = (/*options*/) => {
   };
 
   // This function POSTs to Quay.
-  const authorizationSuccessful = (payload) => {
+  const authorizationSuccessful = (payload, url, token) => {
     console.log('Bitbucket has authenticated.');
     // Build a new payload that quay can consume.
     var quaypayload = {"commit":payload.changes[0].toHash,"ref":payload.changes[0].ref.id,"default_branch":payload.changes[0].ref.displayId};
-    // Make the POST request to the url in the config.
-    // Set different options if we're using our own CA.
-    if (process.env.QUAY_CA_FILE){
-      var quayoptions = {
-        json: quaypayload,
-        agentOptions: {
-          ca: fs.readFileSync(`/project/user-app/${process.env.QUAY_CA_FILE}`)
-        }
-      }
-    } else {
-      json: quayoptions
-    }
-    request.post(config[payload.repository.name], quayoptions, (error, res, body) => {
+    // Make the POST request to the request url.
+    instance.post('https://' + quayHost + url, quaypayload, {
+            auth: {
+                    username: '$token',
+                    password: token
+                }
+            }, (error, res, body) => {
       if (error) {
         // Log errors if they exist.
         console.error(error)
@@ -80,26 +71,18 @@ module.exports = (/*options*/) => {
       res.writeHead(200, { 'Content-Type': 'text/plain' });
       res.end('pong - Please note that the server secret was not tested as a part of this test.');
     } else {
-      if (verifyBitbucket(req)) {
-        // Bitbucket called with the right secret
-        // Pull the payload out of the request.
-        var payload = req.body
-        // See if the config has an entry for the POSTing repository.
-        if (config.hasOwnProperty(payload.repository.name)){
+        // See if the req.query has the property token
+        if (req.query.hasOwnProperty("token")){
           // We know where to direct the QUAY payload.
-          authorizationSuccessful(payload);
+          authorizationSuccessful(req.body, req.originalUrl, req.query.token);
           // Quay was already updated. Respond to Bitbucket.
           res.writeHead(200, { 'Content-Type': 'text/plain' });
-          res.end('Thanks Bitbucket <3');
+          res.end('');
         } else {
           // Error because we don't have this repo in the config.
           res.writeHead(400, { 'Content-Type': 'text/plain' });
-          res.end(`${payload.repository.name} has not been added to the config. Please see the README.md on how to configure access for this repo.`);
+          res.end(`No token param found in request's query param(s)`);
         }
-      } else {
-        // Someone else calling
-        notAuthorized(req, res);
-      }
     }
   });
 

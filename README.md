@@ -5,23 +5,23 @@ This software provides middleware for self hosted instances of
 make webhook calls to [Quay](https://access.redhat.com/products/red-hat-quay),
 RedHat's container image registry. This project is built with
 [appsody](https://appsody.dev/docs).
-## Configuration
-You need to configure the config.json with the name of the Bitbucket repo (key)
-and the URL that quay needs you to post to as the value. The webhook will throw
-an error if this is not configured properly.
-
-You should also note that when using the "test"  button while setting up the
-webhook from Bitbucket, do not include testing the quay server link in the
-config.json, or the required secret configuration.
 
 ### Environmental Variables
 These need to be set when your final appsody container is deployed.
 
-`SERVER_SECRET` Required - Also needs to be set in your Bitbucket webhook.
+`QUAY_HOST` Required - the url for your quay host (example: quay-host.com).
 
 `QUAY_CA_FILE` Optional - If Quay's root CA is not publically signed, you'll
 need to set this to the name of the cert.pem that you've added to the root of
 this project. (example: QUAY_CA_FILE=ExampleRootCA.pem)
+
+### How it Works
+The application will forward your request to your `QUAY_HOST` environment
+variable i.e.
+https://your.initial.url/webhooks/push/trigger/id?token=yourtoken
+will forward to:
+https://$token:yourtoken@your.quay.url/webhooks/push/trigger/id
+with a POST request
 
 ### Building the Appsody Project:
 You can read all about building and deploying Appsody projects
@@ -33,8 +33,6 @@ Here are the steps you'll take:
 - Clone this repository, and change it to your current working directory.
 - Create a new repository in quay and add a
 [Custom Git Repository Push Build Trigger](https://docs.quay.io/guides/custom-trigger.html). Copy the Webhook Endpoint URL.
-- Edit the `config.json` to have your Bitbucket repo name and the Webhook
-Endpoint URL you created in the previous step.
 - If you need to trust a Root CA, copy it to the repository root directory.
 - Run `appsody build` - This builds a container image that you can push.
 
@@ -42,8 +40,7 @@ Endpoint URL you created in the previous step.
 You'll need to add a webhook that points to your newly built container image,
 either with the FQDN or the IP address and then add the `/api` Endpoint.
 Example: https://192.168.1.101:3000/api or
-https://bitbucket-quay-connector.cloudapps.master.ose/api After that be sure to
-add the string you set for the `SERVER_SECRET`.
+https://bitbucket-quay-connector.cloudapps.master.ose/api.
 
 You will also need to add the
 SSH Public Key that Quay recreated to your repo as part of  the
@@ -51,5 +48,5 @@ SSH Public Key that Quay recreated to your repo as part of  the
 
 ## Running the docker image
 If you build the appsody image with `appsody build --tag bitbucket-quay-connector` then you can run the image you've created
-with `docker run --name bitbucet-quay-connector -d -e SERVER_SECRET=supersecretstring -p 3000:3000 bitbucket-quay-connector`
-This would allow you to use the connector at http://localhost:3000/api for the Bitbucket webhook url. (You would need to to replace localhost with your machines's local IP address like http://192.168.1.100:3000/api) 
+with `docker run --name bitbucket-quay-connector -d -p 3000:3000 bitbucket-quay-connector`
+This would allow you to use the connector at http://localhost:3000/api for the Bitbucket webhook url. (You would need to to replace localhost with your machines's local IP address like http://192.168.1.100:3000/api)

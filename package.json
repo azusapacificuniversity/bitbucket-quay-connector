@@ -18,8 +18,7 @@
   },
   "dependencies": {
     "fs": "0.0.1-security",
-    "crypto": "",
-    "request": "",
+    "axios": "^0.19.2",
     "body-parser": ""
   }
 }
